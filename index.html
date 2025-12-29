@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enhanced Personal YouTube Video Library</title>
-<meta name="description" content="A highly optimized, personal YouTube video library with lazy loading, smooth search, persistent grid, custom fullscreen, and many quality-of-life improvements.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Enhanced Personal YouTube Library</title>
+<meta name="description" content="Personal YouTube library optimized for fullscreen, mobile embedding, and iPhone iframe support.">
 <link rel="preconnect" href="https://www.youtube-nocookie.com">
 <link rel="dns-prefetch" href="//i.ytimg.com">
 <style>
@@ -17,21 +17,46 @@
     --accent: #ff3333;
     --radius: 16px;
     --transition: 0.25s ease;
-    --card-min-width: 340px; /* Fixed minimum size */
+    --card-min-width: 340px;
   }
-  body { font-family: system-ui, -apple-system, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-  header { text-align: center; padding: 24px 16px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
-  h1 { margin: 0 0 16px; font-size: 1.8rem; }
-  #search { padding: 14px 20px; width: 90%; max-width: 600px; border-radius: 50px; border: none; background: #222; color: #fff; font-size: 1.1rem; outline: none; transition: var(--transition); }
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+  body { font-family: system-ui, -apple-system, Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+  header {
+    text-align: center;
+    padding: 24px 16px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+  h1 { margin: 0 0 16px; font-size: clamp(1.5rem, 4vw, 1.8rem); }
+  #search {
+    padding: 14px 20px;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 50px;
+    border: none;
+    background: #222;
+    color: #fff;
+    font-size: clamp(1rem, 3vw, 1.1rem);
+    outline: none;
+    transition: var(--transition);
+  }
   #search:focus { box-shadow: 0 0 0 3px var(--accent); }
-  #videoCount { margin: 8px 0 0; color: var(--text-muted); }
+  #videoCount { margin: 8px 0 0; color: var(--text-muted); font-size: clamp(0.8rem, 2.5vw, 0.9rem); }
+  main {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
   .video-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
     gap: 24px;
     padding: 24px;
-    justify-items: start; /* Never center cards */
-    align-items: start;
+    justify-items: start;
   }
   .video-card {
     background: var(--card-bg);
@@ -39,8 +64,7 @@
     overflow: hidden;
     box-shadow: 0 6px 16px rgba(0,0,0,0.4);
     transition: var(--transition);
-    position: relative;
-    width: 100%; /* Force full width of grid cell */
+    width: 100%;
   }
   .video-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.6); background: var(--card-hover); }
   .thumbnail-container {
@@ -79,22 +103,21 @@
   }
   .player-container { position: relative; aspect-ratio: 16 / 9; background: #000; }
   iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
-  #globalFullscreen {
+  #pageFullscreen {
     position: fixed;
     bottom: 24px; right: 24px;
-    width: 56px; height: 56px;
+    width: clamp(48px, 8vw, 56px);
+    height: clamp(48px, 8vw, 56px);
     background: rgba(0,0,0,0.7) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>') center/contain no-repeat;
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    z-index: 100;
+    z-index: 1000;
     backdrop-filter: blur(10px);
-    opacity: 0;
-    transition: opacity 0.4s, transform 0.2s;
+    transition: var(--transition), transform 0.2s;
   }
-  body:has(.playing) #globalFullscreen { opacity: 1; }
-  #globalFullscreen:hover { transform: scale(1.15); background-color: var(--accent); }
-  #globalFullscreen.active { background-color: var(--accent); }
+  #pageFullscreen:hover { transform: scale(1.15); background-color: var(--accent); }
+  #pageFullscreen.active { background-color: var(--accent); }
   .hidden { display: none; }
   @media (max-width: 640px) {
     .video-grid { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
@@ -109,10 +132,10 @@
   <p id="videoCount"></p>
 </header>
 <main class="video-grid" id="videoGrid"></main>
-<button id="globalFullscreen" aria-label="Enter fullscreen for current video"></button>
+<button id="pageFullscreen" aria-label="Fullscreen the entire page"></button>
 
 <script>
-// Video data
+// Video data (same as before)
 const videos = [
   { id: "UpajQYmfiJc", title: "I Hosted a Pokemon Tournament and Banned Evolution" },
   { id: "UOTjKbnBOlY", title: "Sneaking Into A Minecraft Server Just To Build IKEAs..." },
@@ -136,7 +159,7 @@ const videos = [
 const grid = document.getElementById('videoGrid');
 const searchInput = document.getElementById('search');
 const countDisplay = document.getElementById('videoCount');
-const globalFsBtn = document.getElementById('globalFullscreen');
+const pageFsBtn = document.getElementById('pageFullscreen');
 let currentIframe = null;
 
 function createCard(video) {
@@ -151,7 +174,9 @@ function createCard(video) {
       <h3 class="video-title">${video.title}</h3>
     </div>
     <div class="player-container hidden">
-      <iframe data-src="https://www.youtube-nocookie.com/embed/${video.id}?rel=0&modestbranding=1&autoplay=1&enablejsapi=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+      <iframe data-src="https://www.youtube-nocookie.com/embed/${video.id}?rel=0&modestbranding=1&autoplay=1&playsinline=1&enablejsapi=1" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              allowfullscreen></iframe>
     </div>
   `;
 
@@ -163,7 +188,6 @@ function createCard(video) {
       player.classList.remove('hidden');
       card.querySelector('.thumbnail-container').style.display = 'none';
       currentIframe = iframe;
-      document.body.classList.add('playing');
     }
   });
 
@@ -171,7 +195,6 @@ function createCard(video) {
 }
 
 function renderVideos(list) {
-  // Preserve playing video across searches
   const existingPlayers = new Map();
   document.querySelectorAll('.player-container:not(.hidden)').forEach(container => {
     const title = container.previousElementSibling.querySelector('.video-title').textContent;
@@ -189,7 +212,6 @@ function renderVideos(list) {
       player.classList.remove('hidden');
       card.querySelector('.thumbnail-container').style.display = 'none';
       currentIframe = player.querySelector('iframe');
-      document.body.classList.add('playing');
     }
   });
 
@@ -202,30 +224,24 @@ searchInput.addEventListener('input', () => {
   renderVideos(filtered);
 });
 
-globalFsBtn.addEventListener('click', () => {
-  if (!currentIframe) return;
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-    globalFsBtn.classList.remove('active');
+// Page-wide fullscreen button
+pageFsBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.() ||
+    document.documentElement.webkitRequestFullscreen?.() ||
+    document.documentElement.msRequestFullscreen?.();
+    pageFsBtn.classList.add('active');
   } else {
-    currentIframe.requestFullscreen?.() ||
-    currentIframe.webkitRequestFullscreen?.() ||
-    currentIframe.msRequestFullscreen?.();
-    globalFsBtn.classList.add('active');
+    document.exitFullscreen();
+    pageFsBtn.classList.remove('active');
   }
 });
 
 document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement) globalFsBtn.classList.remove('active');
+  pageFsBtn.classList.toggle('active', !!document.fullscreenElement);
 });
 
 renderVideos(videos);
-
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  if (e.key === 'f' && currentIframe) globalFsBtn.click();
-  if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
-});
 </script>
 </body>
 </html>
