@@ -17,6 +17,7 @@
     --accent: #ff3333;
     --radius: 16px;
     --transition: 0.25s ease;
+    --card-min-width: 340px; /* Fixed minimum size */
   }
   body { font-family: system-ui, -apple-system, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
   header { text-align: center; padding: 24px 16px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
@@ -26,10 +27,11 @@
   #videoCount { margin: 8px 0 0; color: var(--text-muted); }
   .video-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
     gap: 24px;
     padding: 24px;
-    min-height: 100vh;
+    justify-items: start; /* Never center cards */
+    align-items: start;
   }
   .video-card {
     background: var(--card-bg);
@@ -38,6 +40,7 @@
     box-shadow: 0 6px 16px rgba(0,0,0,0.4);
     transition: var(--transition);
     position: relative;
+    width: 100%; /* Force full width of grid cell */
   }
   .video-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.6); background: var(--card-hover); }
   .thumbnail-container {
@@ -64,16 +67,6 @@
     pointer-events: none;
   }
   .video-card:hover .play-icon { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-  .duration {
-    position: absolute;
-    bottom: 8px; right: 8px;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    font-weight: bold;
-  }
   .video-info { padding: 16px; }
   .video-title {
     margin: 0;
@@ -84,18 +77,8 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
   .player-container { position: relative; aspect-ratio: 16 / 9; background: #000; }
-  .controls-overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    padding: 20px 16px 16px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-  }
-  .video-card:hover .controls-overlay { opacity: 1; pointer-events: all; }
+  iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
   #globalFullscreen {
     position: fixed;
     bottom: 24px; right: 24px;
@@ -148,7 +131,6 @@ const videos = [
   { id: "7da1R4jZtyk", title: "Adding a Class System (Not the economic type)" },
   { id: "iSdq7RCfdJI", title: "Valorant's Biggest PRED Gets Caught... 💀" },
   { id: "1cUqCRLlN2Q", title: "Valorant Player goes to Gym for 30 Days..." }
-  // Add more as needed
 ];
 
 const grid = document.getElementById('videoGrid');
@@ -164,7 +146,6 @@ function createCard(video) {
     <div class="thumbnail-container">
       <img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" loading="lazy">
       <div class="play-icon" aria-hidden="true"></div>
-      <div class="duration" id="dur-${video.id}">Loading...</div>
     </div>
     <div class="video-info">
       <h3 class="video-title">${video.title}</h3>
@@ -173,18 +154,6 @@ function createCard(video) {
       <iframe data-src="https://www.youtube-nocookie.com/embed/${video.id}?rel=0&modestbranding=1&autoplay=1&enablejsapi=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
     </div>
   `;
-
-  // Fetch duration from YouTube (no API key needed for basic info)
-  fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${video.id}`)
-    .then(r => r.json())
-    .then(data => {
-      if (data.duration) {
-        const mins = Math.floor(data.duration / 60);
-        const secs = data.duration % 60;
-        document.getElementById(`dur-${video.id}`).textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
-      }
-    })
-    .catch(() => { document.getElementById(`dur-${video.id}`).remove(); });
 
   card.querySelector('.thumbnail-container').addEventListener('click', () => {
     const player = card.querySelector('.player-container');
@@ -202,7 +171,7 @@ function createCard(video) {
 }
 
 function renderVideos(list) {
-  // Preserve existing players when filtering
+  // Preserve playing video across searches
   const existingPlayers = new Map();
   document.querySelectorAll('.player-container:not(.hidden)').forEach(container => {
     const title = container.previousElementSibling.querySelector('.video-title').textContent;
@@ -214,7 +183,6 @@ function renderVideos(list) {
     const card = createCard(video);
     grid.appendChild(card);
 
-    // Restore playing video if it was open
     if (existingPlayers.has(video.title)) {
       const player = card.querySelector('.player-container');
       player.innerHTML = existingPlayers.get(video.title);
@@ -228,14 +196,12 @@ function renderVideos(list) {
   countDisplay.textContent = `${list.length} video${list.length !== 1 ? 's' : ''} displayed`;
 }
 
-// Persistent grid size during search
 searchInput.addEventListener('input', () => {
   const term = searchInput.value.toLowerCase().trim();
   const filtered = term ? videos.filter(v => v.title.toLowerCase().includes(term)) : videos;
   renderVideos(filtered);
 });
 
-// Global fullscreen button
 globalFsBtn.addEventListener('click', () => {
   if (!currentIframe) return;
   if (document.fullscreenElement) {
@@ -253,17 +219,12 @@ document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement) globalFsBtn.classList.remove('active');
 });
 
-// Initial render
 renderVideos(videos);
 
-// Keyboard shortcuts (personal use)
+// Keyboard shortcuts
 document.addEventListener('keydown', e => {
-  if (e.key === 'f' && currentIframe) {
-    globalFsBtn.click();
-  }
-  if (e.key === 'Escape' && document.fullscreenElement) {
-    document.exitFullscreen();
-  }
+  if (e.key === 'f' && currentIframe) globalFsBtn.click();
+  if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
 });
 </script>
 </body>
