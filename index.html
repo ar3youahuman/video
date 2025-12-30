@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Enhanced Personal YouTube Library</title>
-<meta name="description" content="Personal YouTube library optimized for fullscreen, mobile embedding, and iPhone iframe support.">
+<meta name="description" content="Personal YouTube library with full-size video playback, fixed card sizes, and mobile support.">
 <link rel="preconnect" href="https://www.youtube-nocookie.com">
 <link rel="dns-prefetch" href="//i.ytimg.com">
 <style>
@@ -49,7 +49,7 @@
   main {
     flex: 1;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
   }
   .video-grid {
     display: grid;
@@ -65,18 +65,21 @@
     box-shadow: 0 6px 16px rgba(0,0,0,0.4);
     transition: var(--transition);
     width: 100%;
+    display: flex;
+    flex-direction: column;
   }
   .video-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.6); background: var(--card-hover); }
   .thumbnail-container {
     position: relative;
-    aspect-ratio: 16 / 9;
+    width: 100%;
     background: #000;
     overflow: hidden;
+    cursor: pointer;
   }
   .thumbnail-container img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    display: block;
     transition: transform 0.4s ease;
   }
   .video-card:hover img { transform: scale(1.08); }
@@ -91,7 +94,7 @@
     pointer-events: none;
   }
   .video-card:hover .play-icon { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-  .video-info { padding: 16px; }
+  .video-info { padding: 16px; flex-shrink: 0; }
   .video-title {
     margin: 0;
     font-size: 1.15rem;
@@ -101,8 +104,20 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .player-container { position: relative; aspect-ratio: 16 / 9; background: #000; }
-  iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
+  .player-container {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 aspect ratio */
+    background: #000;
+    flex-shrink: 0;
+  }
+  .player-container iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
   #pageFullscreen {
     position: fixed;
     bottom: 24px; right: 24px;
@@ -135,7 +150,6 @@
 <button id="pageFullscreen" aria-label="Fullscreen the entire page"></button>
 
 <script>
-// Video data (same as before)
 const videos = [
   { id: "UpajQYmfiJc", title: "I Hosted a Pokemon Tournament and Banned Evolution" },
   { id: "UOTjKbnBOlY", title: "Sneaking Into A Minecraft Server Just To Build IKEAs..." },
@@ -167,7 +181,9 @@ function createCard(video) {
   card.className = 'video-card';
   card.innerHTML = `
     <div class="thumbnail-container">
-      <img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" loading="lazy">
+      <img src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg" 
+           onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'" 
+           alt="${video.title}" loading="lazy">
       <div class="play-icon" aria-hidden="true"></div>
     </div>
     <div class="video-info">
@@ -224,7 +240,6 @@ searchInput.addEventListener('input', () => {
   renderVideos(filtered);
 });
 
-// Page-wide fullscreen button
 pageFsBtn.addEventListener('click', () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen?.() ||
