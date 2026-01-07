@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Enhanced Personal YouTube Library</title>
-<meta name="description" content="Personal YouTube library with full-size video playback, fixed card sizes, and mobile support.">
+
 <link rel="preconnect" href="https://www.youtube-nocookie.com">
 <link rel="dns-prefetch" href="//i.ytimg.com">
 
@@ -18,28 +18,26 @@
   --accent: #ff3333;
   --radius: 16px;
   --transition: 0.25s ease;
-  --card-min-width: 340px;
+  --card-min-width: 460px;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html, body {
-  height: 100%;
   margin: 0;
-  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Arial, sans-serif;
   overflow: hidden;
 }
 
-body {
-  font-family: system-ui, -apple-system, Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-}
-
 header {
-  text-align: center;
   padding: 24px 16px;
-  background: rgba(0,0,0,0.4);
+  text-align: center;
+  background: rgba(0,0,0,0.5);
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
@@ -51,15 +49,15 @@ h1 {
 }
 
 #search {
-  padding: 14px 20px;
   width: 90%;
   max-width: 600px;
-  border-radius: 50px;
+  padding: 14px 20px;
+  border-radius: 999px;
   border: none;
-  background: #222;
-  color: #fff;
-  font-size: 1rem;
   outline: none;
+  background: #222;
+  color: white;
+  font-size: 1rem;
 }
 
 #search:focus {
@@ -67,7 +65,7 @@ h1 {
 }
 
 #videoCount {
-  margin-top: 8px;
+  margin-top: 10px;
   color: var(--text-muted);
 }
 
@@ -79,15 +77,15 @@ main {
 .video-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
-  gap: 24px;
-  padding: 24px;
+  gap: 28px;
+  padding: 28px;
 }
 
 .video-card {
   background: var(--card-bg);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
   transition: var(--transition);
 }
 
@@ -98,33 +96,44 @@ main {
 
 .thumbnail-container {
   position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: black;
   cursor: pointer;
 }
 
 .thumbnail-container img {
   width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
 .play-icon {
   position: absolute;
   inset: 0;
-  background: url("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_play_button_icon_(2013–2017).svg") center / 80px no-repeat;
+  background:
+    linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15)),
+    url("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_play_button_icon_(2013–2017).svg")
+    center / 80px no-repeat;
 }
 
 .video-info {
-  padding: 16px;
+  padding: 16px 18px;
+}
+
+.video-info h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
 }
 
 .player-container {
-  position: relative;
   width: 100%;
-  padding-top: 56.25%;
+  aspect-ratio: 16 / 9;
 }
 
 .player-container iframe {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   border: none;
@@ -132,18 +141,6 @@ main {
 
 .hidden {
   display: none;
-}
-
-#pageFullscreen {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0,0,0,0.7);
-  cursor: pointer;
 }
 </style>
 </head>
@@ -156,9 +153,9 @@ main {
   <p id="videoCount"></p>
 </header>
 
-<main id="videoGrid" class="video-grid"></main>
-
-<button id="pageFullscreen"></button>
+<main>
+  <div id="videoGrid" class="video-grid"></div>
+</main>
 
 <script>
 const videos = [
@@ -170,15 +167,15 @@ const videos = [
   { id: "PNwPEcc1r3k", title: "How Powerful is The One Ring?" },
   { id: "YNEoCdNB9kI", title: "Guess the Secret Pokemon Only Knowing THIS" },
   { id: "CztFVxgP000", title: "How to use Thou, Thee, and Thy" },
-  { id: "yn6CFifFCUI", title: "BEST OF GASLIGHTING IN 2025... (CUTESPIDERS)" },
+  { id: "yn6CFifFCUI", title: "BEST OF GASLIGHTING IN 2025..." },
   { id: "4SioVUPC-yI", title: "Hiding the end portal to prank a Speedrunner" },
   { id: "0ddCYxtkXLQ", title: "Lee Destroys his Girlfriend in Valorant..." },
   { id: "jqalzRGVHD4", title: "FaZe is Dead" },
   { id: "oIjotB9YF-4", title: "Kai Cenat's Breakup is Insane" },
-  { id: "UdAwHKkQnAE", title: "Speedrunning Words in InfiniteCraft - REMATCH vs PointCrow" },
-  { id: "7da1R4jZtyk", title: "Adding a Class System (Not the economic type)" },
-  { id: "iSdq7RCfdJI", title: "Valorant's Biggest PRED Gets Caught... 💀" },
-  { id: "1cUqCRLlN2Q", title: "Valorant Player goes to Gym for 30 Days..." }
+  { id: "UdAwHKkQnAE", title: "Speedrunning Words in InfiniteCraft" },
+  { id: "7da1R4jZtyk", title: "Adding a Class System" },
+  { id: "iSdq7RCfdJI", title: "Valorant's Biggest PRED Gets Caught" },
+  { id: "1cUqCRLlN2Q", title: "Valorant Player goes to Gym for 30 Days" }
 ];
 
 const grid = document.getElementById("videoGrid");
@@ -191,14 +188,17 @@ function createCard(video) {
 
   card.innerHTML = `
     <div class="thumbnail-container">
-      <img src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg"
-           onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'"
-           alt="${video.title}">
+      <img
+        src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg"
+        onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'"
+      >
       <div class="play-icon"></div>
     </div>
+
     <div class="video-info">
       <h3>${video.title}</h3>
     </div>
+
     <div class="player-container hidden">
       <iframe
         data-src="https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0"
