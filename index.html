@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Enhanced Personal YouTube Library</title>
 
 <link rel="preconnect" href="https://www.youtube-nocookie.com">
@@ -27,11 +27,9 @@
 
 html, body {
   margin: 0;
-  height: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, Arial, sans-serif;
-  overflow: hidden;
 }
 
 header {
@@ -67,11 +65,6 @@ h1 {
 #videoCount {
   margin-top: 10px;
   color: var(--text-muted);
-}
-
-main {
-  flex: 1;
-  overflow-y: auto;
 }
 
 .video-grid {
@@ -153,9 +146,7 @@ main {
   <p id="videoCount"></p>
 </header>
 
-<main>
-  <div id="videoGrid" class="video-grid"></div>
-</main>
+<div id="videoGrid" class="video-grid"></div>
 
 <script>
 const videos = [
@@ -175,7 +166,8 @@ const videos = [
   { id: "UdAwHKkQnAE", title: "Speedrunning Words in InfiniteCraft" },
   { id: "7da1R4jZtyk", title: "Adding a Class System" },
   { id: "iSdq7RCfdJI", title: "Valorant's Biggest PRED Gets Caught" },
-  { id: "1cUqCRLlN2Q", title: "Valorant Player goes to Gym for 30 Days" }
+  { id: "1cUqCRLlN2Q", title: "Valorant Player goes to Gym for 30 Days" },
+  { id: "XICe5yTDoI8", title: "I Learnt How To Become An E Boy..." }
 ];
 
 const grid = document.getElementById("videoGrid");
@@ -188,10 +180,8 @@ function createCard(video) {
 
   card.innerHTML = `
     <div class="thumbnail-container">
-      <img
-        src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg"
-        onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'"
-      >
+      <img src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg"
+           onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'">
       <div class="play-icon"></div>
     </div>
 
