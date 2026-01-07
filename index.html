@@ -1,262 +1,421 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Enhanced Personal YouTube Library</title>
-<meta name="description" content="Personal YouTube library with full-size video playback, fixed card sizes, and mobile support.">
-<link rel="preconnect" href="https://www.youtube-nocookie.com">
-<link rel="dns-prefetch" href="//i.ytimg.com">
-<style>
-  :root {
-    --bg: #0d0d0d;
-    --card-bg: #1a1a1a;
-    --card-hover: #242424;
-    --text: #e0e0e0;
-    --text-muted: #aaaaaa;
-    --accent: #ff3333;
-    --radius: 16px;
-    --transition: 0.25s ease;
-    --card-min-width: 340px;
-  }
-  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
-  body { font-family: system-ui, -apple-system, Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
-  header {
-    text-align: center;
-    padding: 24px 16px;
-    background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    flex-shrink: 0;
-  }
-  h1 { margin: 0 0 16px; font-size: clamp(1.5rem, 4vw, 1.8rem); }
-  #search {
-    padding: 14px 20px;
-    width: 90%;
-    max-width: 600px;
-    border-radius: 50px;
-    border: none;
-    background: #222;
-    color: #fff;
-    font-size: clamp(1rem, 3vw, 1.1rem);
-    outline: none;
-    transition: var(--transition);
-  }
-  #search:focus { box-shadow: 0 0 0 3px var(--accent); }
-  #videoCount { margin: 8px 0 0; color: var(--text-muted); font-size: clamp(0.8rem, 2.5vw, 0.9rem); }
-  main {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .video-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
-    gap: 24px;
-    padding: 24px;
-    justify-items: start;
-  }
-  .video-card {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-    transition: var(--transition);
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .video-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.6); background: var(--card-hover); }
-  .thumbnail-container {
-    position: relative;
-    width: 100%;
-    background: #000;
-    overflow: hidden;
-    cursor: pointer;
-  }
-  .thumbnail-container img {
-    width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 0.4s ease;
-  }
-  .video-card:hover img { transform: scale(1.08); }
-  .play-icon {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80px; height: 56px;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_play_button_icon_(2013–2017).svg') center/contain no-repeat;
-    opacity: 0.85;
-    transition: var(--transition);
-    pointer-events: none;
-  }
-  .video-card:hover .play-icon { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
-  .video-info { padding: 16px; flex-shrink: 0; }
-  .video-title {
-    margin: 0;
-    font-size: 1.15rem;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .player-container {
-    position: relative;
-    width: 100%;
-    padding-top: 56.25%; /* 16:9 aspect ratio */
-    background: #000;
-    flex-shrink: 0;
-  }
-  .player-container iframe {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-  #pageFullscreen {
-    position: fixed;
-    bottom: 24px; right: 24px;
-    width: clamp(48px, 8vw, 56px);
-    height: clamp(48px, 8vw, 56px);
-    background: rgba(0,0,0,0.7) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>') center/contain no-repeat;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-    transition: var(--transition), transform 0.2s;
-  }
-  #pageFullscreen:hover { transform: scale(1.15); background-color: var(--accent); }
-  #pageFullscreen.active { background-color: var(--accent); }
-  .hidden { display: none; }
-  @media (max-width: 640px) {
-    .video-grid { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
-    #search { width: 95%; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultimate Personal YouTube Library</title>
+  <meta name="description" content="Advanced YouTube library with playlists, history, themes, and more.">
+  <link rel="preconnect" href="https://www.youtube-nocookie.com">
+  <link rel="dns-prefetch" href="https://i.ytimg.com">
+  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiWW91VHViZSBMaWJyYXJ5Iiwic2hvcnRfbmFtZSI6IllUIFN0b3JlIiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vd3d3LnlvdXR1YmUuY29tL2Zhdmljb24uaWNvIiwic2l6ZXMiOiI2NHg2NCIsInR5cGUiOiJpbWFnZS9pY28ifV0sInRoZW1lX2NvbG9yIjoiIzAwMDAwMCIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIn0=">
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --card-bg: #1a1a1a;
+      --card-hover: #282828;
+      --text: #f0f0f0;
+      --text-muted: #a0a0a0;
+      --accent: #ff4444;
+      --accent-hover: #ff6666;
+      --radius: 12px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.3);
+      --transition: 0.3s ease;
+      --card-width: 360px;
+    }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --card-hover: #f0f0f0;
+      --text: #202020;
+      --text-muted: #606060;
+      --accent: #e60000;
+      --accent-hover: #ff3333;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: system-ui, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      display: flex; 
+      flex-direction: column; 
+      height: 100vh; 
+      overflow: hidden;
+    }
+    header {
+      padding: 16px;
+      background: rgba(var(--bg-rgb, 13,13,13), 0.8);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    h1 { font-size: 1.6rem; font-weight: 600; }
+    #search { 
+      flex: 1; 
+      max-width: 400px; 
+      padding: 10px 16px; 
+      border-radius: 24px; 
+      border: 1px solid var(--text-muted); 
+      background: var(--card-bg); 
+      color: var(--text); 
+      outline: none; 
+    }
+    #search:focus { border-color: var(--accent); }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    select, button { 
+      padding: 8px 12px; 
+      border-radius: 8px; 
+      border: none; 
+      background: var(--card-bg); 
+      color: var(--text); 
+      cursor: pointer; 
+    }
+    button:hover { background: var(--accent); color: white; }
+    main { flex: 1; overflow-y: auto; padding: 16px; }
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-width), 1fr));
+      gap: 20px;
+    }
+    .video-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .video-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.5); transform: translateY(-4px); }
+    .thumbnail-container {
+      position: relative;
+      aspect-ratio: 16/9;
+      cursor: pointer;
+      background: #000;
+    }
+    .thumbnail-container img { width: 100%; height: 100%; object-fit: cover; }
+    .play-icon {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px; height: 42px;
+      background: url('https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_play_button_icon_(2013–2017).svg') center/contain no-repeat;
+      opacity: 0.8;
+      transition: var(--transition);
+    }
+    .thumbnail-container:hover .play-icon { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    .duration, .progress { 
+      position: absolute; 
+      bottom: 8px; right: 8px; 
+      background: rgba(0,0,0,0.7); 
+      padding: 4px 8px; 
+      border-radius: 4px; 
+      font-size: 0.85rem; 
+    }
+    .progress { bottom: 8px; left: 8px; color: var(--accent); }
+    .video-info { padding: 12px; }
+    .video-title { font-size: 1.1rem; margin-bottom: 4px; }
+    .video-meta { color: var(--text-muted); font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 8px; }
+    .player-container {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+    .player-container.open { max-height: 500px; }
+    iframe { width: 100%; height: 202px; border: none; }
+    #playlists { margin: 16px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+    .playlist-btn { padding: 6px 12px; border-radius: 20px; background: var(--accent); color: white; cursor: pointer; }
+    .playlist-btn.active { background: var(--accent-hover); }
+    #fullscreen-btn { position: fixed; bottom: 20px; right: 20px; z-index: 30; padding: 12px; border-radius: 50%; background: var(--accent); color: white; }
+    @media (max-width: 600px) {
+      .video-grid { grid-template-columns: 1fr; }
+      iframe { height: 180px; }
+    }
+  </style>
 </head>
-<body>
-<header>
-  <h1>Personal YouTube Library</h1>
-  <input type="text" id="search" placeholder="Search by title..." autocomplete="off">
-  <p id="videoCount"></p>
-</header>
-<main class="video-grid" id="videoGrid"></main>
-<button id="pageFullscreen" aria-label="Fullscreen the entire page"></button>
-
-<script>
-const videos = [
-  { id: "UpajQYmfiJc", title: "I Hosted a Pokemon Tournament and Banned Evolution" },
-  { id: "UOTjKbnBOlY", title: "Sneaking Into A Minecraft Server Just To Build IKEAs..." },
-  { id: "t_9QeNinUBg", title: "Can I teach my friends to code in 1 day?" },
-  { id: "R_7vCkqJgS0", title: "Attempting the 100 McNugget Challenge (USA USA USA)" },
-  { id: "NJk5S8KSnwM", title: "Can Twitch Chat spam this emoji EXACTLY 250 times?" },
-  { id: "PNwPEcc1r3k", title: "How Powerful is The One Ring?" },
-  { id: "YNEoCdNB9kI", title: "Guess the Secret Pokemon Only Knowing THIS" },
-  { id: "CztFVxgP000", title: "How to use Thou, Thee, and Thy" },
-  { id: "yn6CFifFCUI", title: "BEST OF GASLIGHTING IN 2025... (CUTESPIDERS)" },
-  { id: "4SioVUPC-yI", title: "Hiding the end portal to prank a Speedrunner" },
-  { id: "0ddCYxtkXLQ", title: "Lee Destroys his Girlfriend in Valorant..." },
-  { id: "jqalzRGVHD4", title: "FaZe is Dead" },
-  { id: "oIjotB9YF-4", title: "Kai Cenat's Breakup is Insane" },
-  { id: "UdAwHKkQnAE", title: "Speedrunning Words in InfiniteCraft - REMATCH vs PointCrow" },
-  { id: "7da1R4jZtyk", title: "Adding a Class System (Not the economic type)" },
-  { id: "iSdq7RCfdJI", title: "Valorant's Biggest PRED Gets Caught... 💀" },
-  { id: "1cUqCRLlN2Q", title: "Valorant Player goes to Gym for 30 Days..." }
-];
-
-const grid = document.getElementById('videoGrid');
-const searchInput = document.getElementById('search');
-const countDisplay = document.getElementById('videoCount');
-const pageFsBtn = document.getElementById('pageFullscreen');
-let currentIframe = null;
-
-function createCard(video) {
-  const card = document.createElement('div');
-  card.className = 'video-card';
-  card.innerHTML = `
-    <div class="thumbnail-container">
-      <img src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg" 
-           onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'" 
-           alt="${video.title}" loading="lazy">
-      <div class="play-icon" aria-hidden="true"></div>
+<body data-theme="dark">
+  <header>
+    <h1>Ultimate YouTube Library</h1>
+    <input type="text" id="search" placeholder="Search titles...">
+    <div class="controls">
+      <select id="sort">
+        <option value="title">Sort: Title A-Z</option>
+        <option value="title-desc">Title Z-A</option>
+        <option value="duration">Duration ↑</option>
+        <option value="duration-desc">Duration ↓</option>
+        <option value="added">Added Date</option>
+      </select>
+      <select id="filter">
+        <option value="all">Filter: All</option>
+        <option value="watched">Watched</option>
+        <option value="unwatched">Unwatched</option>
+      </select>
+      <select id="theme">
+        <option value="dark">Theme: Dark</option>
+        <option value="light">Light</option>
+        <option value="auto">Auto</option>
+      </select>
+      <button id="add-playlist">+ Playlist</button>
+      <button id="export">Export</button>
+      <button id="import">Import</button>
     </div>
-    <div class="video-info">
-      <h3 class="video-title">${video.title}</h3>
-    </div>
-    <div class="player-container hidden">
-      <iframe data-src="https://www.youtube-nocookie.com/embed/${video.id}?rel=0&modestbranding=1&autoplay=1&playsinline=1&enablejsapi=1" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-              allowfullscreen></iframe>
-    </div>
-  `;
+    <div id="playlists"></div>
+    <p id="videoCount"></p>
+  </header>
+  <main>
+    <div class="video-grid" id="videoGrid"></div>
+  </main>
+  <button id="fullscreen-btn" aria-label="Toggle Fullscreen">⛶</button>
 
-  card.querySelector('.thumbnail-container').addEventListener('click', () => {
-    const player = card.querySelector('.player-container');
-    const iframe = card.querySelector('iframe');
-    if (player.classList.contains('hidden')) {
-      iframe.src = iframe.dataset.src;
-      player.classList.remove('hidden');
-      card.querySelector('.thumbnail-container').style.display = 'none';
-      currentIframe = iframe;
+  <script>
+    // Full restored and expanded videos list with new additions
+    let videos = JSON.parse(localStorage.getItem('ytLibraryVideos')) || [
+      { id: "UpajQYmfiJc", title: "I Hosted a Pokemon Tournament and Banned Evolution", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "UOTjKbnBOlY", title: "Sneaking Into A Minecraft Server Just To Build IKEAs...", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "t_9QeNinUBg", title: "Can I teach my friends to code in 1 day?", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "R_7vCkqJgS0", title: "Attempting the 100 McNugget Challenge (USA USA USA)", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "NJk5S8KSnwM", title: "Can Twitch Chat spam this emoji EXACTLY 250 times?", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "PNwPEcc1r3k", title: "How Powerful is The One Ring?", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "YNEoCdNB9kI", title: "Guess the Secret Pokemon Only Knowing THIS", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "CztFVxgP000", title: "How to use Thou, Thee, and Thy", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "yn6CFifFCUI", title: "BEST OF GASLIGHTING IN 2025... (CUTESPIDERS)", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "4SioVUPC-yI", title: "Hiding the end portal to prank a Speedrunner", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "0ddCYxtkXLQ", title: "Lee Destroys his Girlfriend in Valorant...", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "jqalzRGVHD4", title: "FaZe is Dead", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "oIjotB9YF-4", title: "Kai Cenat's Breakup is Insane", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "UdAwHKkQnAE", title: "Speedrunning Words in InfiniteCraft - REMATCH vs PointCrow", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "7da1R4jZtyk", title: "Adding a Class System (Not the economic type)", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "iSdq7RCfdJI", title: "Valorant's Biggest PRED Gets Caught... 💀", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "1cUqCRLlN2Q", title: "Valorant Player goes to Gym for 30 Days...", added: Date.now(), duration: 0, views: 0, likes: 0, uploadDate: '' },
+      { id: "4ishXNW-yfU", title: "How to Fake an Entire Esports Career Without Ever Playing - The Multi-Year Scheme of Tokyogurl", added: Date.now(), duration: 1725, views: 68337, likes: 8287, uploadDate: '2026-01-07' },
+      { id: "FGFO-EvGVRw", title: "Useless AI Trash", added: Date.now(), duration: 0, views: 366933, likes: 27622, uploadDate: '2026-01-07' }
+    ];
+
+    let playlists = JSON.parse(localStorage.getItem('ytLibraryPlaylists')) || { 'All': videos.map(v => v.id) };
+    let history = JSON.parse(localStorage.getItem('ytLibraryHistory')) || {};
+    let openPlayer = null;
+
+    const grid = document.getElementById('videoGrid');
+    const search = document.getElementById('search');
+    const sortSelect = document.getElementById('sort');
+    const filterSelect = document.getElementById('filter');
+    const themeSelect = document.getElementById('theme');
+    const playlistsContainer = document.getElementById('playlists');
+    const countDisplay = document.getElementById('videoCount');
+    const fsBtn = document.getElementById('fullscreen-btn');
+    const addPlaylistBtn = document.getElementById('add-playlist');
+    const exportBtn = document.getElementById('export');
+    const importBtn = document.getElementById('import');
+
+    // Theme handling
+    function setTheme(theme) {
+      document.body.dataset.theme = theme;
+      localStorage.setItem('ytTheme', theme);
+      if (theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.dataset.theme = prefersDark ? 'dark' : 'light';
+      }
     }
-  });
+    themeSelect.value = localStorage.getItem('ytTheme') || 'dark';
+    setTheme(themeSelect.value);
+    themeSelect.addEventListener('change', e => setTheme(e.target.value));
 
-  return card;
-}
+    // Fetch video metadata
+    async function fetchMeta(video) {
+      if (video.duration) return;
+      try {
+        const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${video.id}`);
+        const data = await res.json();
+        video.duration = data.duration || 0;
+        video.views = data.views || 0; // Note: noembed might not have views/likes; for real API, use YouTube Data API
+        video.likes = data.likes || 0;
+        video.uploadDate = data.upload_date || '';
+        saveVideos();
+      } catch {}
+    }
 
-function renderVideos(list) {
-  const existingPlayers = new Map();
-  document.querySelectorAll('.player-container:not(.hidden)').forEach(container => {
-    const title = container.previousElementSibling.querySelector('.video-title').textContent;
-    existingPlayers.set(title, container.innerHTML);
-  });
+    // Save functions
+    function saveVideos() { localStorage.setItem('ytLibraryVideos', JSON.stringify(videos)); }
+    function savePlaylists() { localStorage.setItem('ytLibraryPlaylists', JSON.stringify(playlists)); }
+    function saveHistory() { localStorage.setItem('ytLibraryHistory', JSON.stringify(history)); }
 
-  grid.innerHTML = '';
-  list.forEach(video => {
-    const card = createCard(video);
-    grid.appendChild(card);
+    // Create card
+    function createCard(video) {
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      const hist = history[video.id] || { progress: 0 };
+      card.innerHTML = `
+        <div class="thumbnail-container">
+          <img src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg" 
+               onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'" 
+               alt="${video.title}" loading="lazy">
+          <div class="play-icon"></div>
+          <div class="duration">${formatDuration(video.duration)}</div>
+          ${hist.progress > 0 ? `<div class="progress">${hist.progress}%</div>` : ''}
+        </div>
+        <div class="video-info">
+          <h3 class="video-title">${video.title}</h3>
+          <p class="video-meta">
+            ${video.views ? `<span>${video.views.toLocaleString()} views</span>` : ''}
+            ${video.likes ? `<span>• ${video.likes.toLocaleString()} likes</span>` : ''}
+            ${video.uploadDate ? `<span>• ${new Date(video.uploadDate).toLocaleDateString()}</span>` : ''}
+          </p>
+        </div>
+        <div class="player-container">
+          <iframe allow="autoplay; fullscreen; picture-in-picture"></iframe>
+        </div>
+      `;
 
-    if (existingPlayers.has(video.title)) {
+      const thumb = card.querySelector('.thumbnail-container');
       const player = card.querySelector('.player-container');
-      player.innerHTML = existingPlayers.get(video.title);
-      player.classList.remove('hidden');
-      card.querySelector('.thumbnail-container').style.display = 'none';
-      currentIframe = player.querySelector('iframe');
+      const iframe = card.querySelector('iframe');
+
+      const toggle = () => {
+        if (openPlayer && openPlayer !== player) {
+          openPlayer.classList.remove('open');
+          openPlayer.querySelector('iframe').src = '';
+        }
+        player.classList.toggle('open');
+        if (player.classList.contains('open')) {
+          iframe.src = `https://www.youtube-nocookie.com/embed/${video.id}?rel=0&modestbranding=1&autoplay=1&playsinline=1&enablejsapi=1&start=${hist.time || 0}`;
+          openPlayer = player;
+          thumb.style.display = 'none';
+          // Track progress (simple interval; for accuracy, use YouTube API)
+          const interval = setInterval(() => {
+            // Simulate progress update (in real, use postMessage to iframe)
+            hist.time = (hist.time || 0) + 1;
+            hist.progress = Math.min(100, Math.floor((hist.time / video.duration) * 100));
+            saveHistory();
+            if (hist.progress >= 95) clearInterval(interval);
+          }, 1000);
+        } else {
+          iframe.src = '';
+          openPlayer = null;
+          thumb.style.display = '';
+        }
+      };
+
+      thumb.addEventListener('click', toggle);
+      return card;
     }
-  });
 
-  countDisplay.textContent = `${list.length} video${list.length !== 1 ? 's' : ''} displayed`;
-}
+    // Format helpers
+    function formatDuration(sec) {
+      if (!sec) return '?:??';
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
 
-searchInput.addEventListener('input', () => {
-  const term = searchInput.value.toLowerCase().trim();
-  const filtered = term ? videos.filter(v => v.title.toLowerCase().includes(term)) : videos;
-  renderVideos(filtered);
-});
+    // Render
+    async function render(currentPlaylist = 'All') {
+      const query = search.value.toLowerCase();
+      let list = videos.filter(v => playlists[currentPlaylist].includes(v.id));
+      if (query) list = list.filter(v => v.title.toLowerCase().includes(query));
+      
+      // Sort
+      const sortKey = sortSelect.value;
+      list.sort((a, b) => {
+        if (sortKey === 'title') return a.title.localeCompare(b.title);
+        if (sortKey === 'title-desc') return b.title.localeCompare(a.title);
+        if (sortKey === 'duration') return a.duration - b.duration;
+        if (sortKey === 'duration-desc') return b.duration - a.duration;
+        if (sortKey === 'added') return b.added - a.added;
+        return 0;
+      });
 
-pageFsBtn.addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen?.() ||
-    document.documentElement.webkitRequestFullscreen?.() ||
-    document.documentElement.msRequestFullscreen?.();
-    pageFsBtn.classList.add('active');
-  } else {
-    document.exitFullscreen();
-    pageFsBtn.classList.remove('active');
-  }
-});
+      // Filter
+      const filterVal = filterSelect.value;
+      if (filterVal === 'watched') list = list.filter(v => history[v.id]?.progress >= 95);
+      if (filterVal === 'unwatched') list = list.filter(v => !history[v.id] || history[v.id].progress < 95);
 
-document.addEventListener('fullscreenchange', () => {
-  pageFsBtn.classList.toggle('active', !!document.fullscreenElement);
-});
+      grid.innerHTML = '';
+      for (const v of list) {
+        await fetchMeta(v); // Async but non-blocking
+        grid.appendChild(createCard(v));
+      }
+      countDisplay.textContent = `${list.length} videos`;
+    }
 
-renderVideos(videos);
-</script>
+    // Playlists UI
+    function renderPlaylists(active = 'All') {
+      playlistsContainer.innerHTML = '';
+      Object.keys(playlists).forEach(name => {
+        const btn = document.createElement('div');
+        btn.className = 'playlist-btn';
+        btn.textContent = name;
+        if (name === active) btn.classList.add('active');
+        btn.addEventListener('click', () => render(name));
+        playlistsContainer.appendChild(btn);
+      });
+    }
+
+    // Add playlist
+    addPlaylistBtn.addEventListener('click', () => {
+      const name = prompt('Playlist name:');
+      if (name && !playlists[name]) {
+        playlists[name] = [];
+        savePlaylists();
+        renderPlaylists();
+      }
+    });
+
+    // Export/Import
+    exportBtn.addEventListener('click', () => {
+      const data = { videos, playlists, history };
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'yt-library.json';
+      a.click();
+    });
+    importBtn.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const data = JSON.parse(ev.target.result);
+          videos = data.videos || videos;
+          playlists = data.playlists || playlists;
+          history = data.history || history;
+          saveVideos(); savePlaylists(); saveHistory();
+          render();
+          renderPlaylists();
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    });
+
+    // Event listeners
+    search.addEventListener('input', () => render(Object.keys(playlists).find(p => playlistsContainer.querySelector('.active')?.textContent || 'All'));
+    sortSelect.addEventListener('change', () => render());
+    filterSelect.addEventListener('change', () => render());
+    fsBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    });
+
+    // Initial load
+    Promise.all(videos.map(fetchMeta)).then(() => {
+      render();
+      renderPlaylists();
+    });
+
+    // PWA install prompt (optional)
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      // Show install button if desired
+    });
+  </script>
 </body>
 </html>
