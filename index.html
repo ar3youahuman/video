@@ -2,97 +2,271 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enhanced Personal YouTube Library</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Personal YouTube Library</title>
 <link rel="preconnect" href="https://www.youtube-nocookie.com">
 <link rel="dns-prefetch" href="//i.ytimg.com">
-
 <style>
 :root {
-  --bg: #0d0d0d;
-  --card-bg: #1a1a1a;
-  --card-hover: #242424;
-  --text: #e0e0e0;
-  --text-muted: #aaaaaa;
+  --bg: #0a0a0a;
+  --bg-elevated: #111;
+  --card-bg: #161616;
+  --card-hover: #1c1c1c;
+  --card-active: #1a1a1a;
+  --text: #f0f0f0;
+  --text-secondary: #999;
+  --text-muted: #666;
   --accent: #ff3333;
-  --radius: 16px;
-  --transition: 0.25s ease;
-  --card-min-width: 460px;
+  --accent-soft: rgba(255,51,51,0.12);
+  --accent-glow: rgba(255,51,51,0.3);
+  --border: rgba(255,255,255,0.07);
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.6);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.2s ease;
+  --header-h: auto;
 }
 
-* {
-  box-sizing: border-box;
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
 }
 
-html, body {
-  margin: 0;
+body {
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+
+.accent-bar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), #ff6644, var(--accent));
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
 }
 
 header {
-  padding: 24px 16px;
-  text-align: center;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(10px);
   position: sticky;
-  top: 0;
-  z-index: 10;
+  top: 3px;
+  z-index: 100;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 16px 0;
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 h1 {
-  margin: 0 0 16px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+h1 .dot { color: var(--accent); }
+
+.search-wrapper {
+  flex: 1;
+  position: relative;
+  max-width: 480px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 
 #search {
-  width: 90%;
-  max-width: 600px;
-  padding: 14px 20px;
+  width: 100%;
+  padding: 10px 40px 10px 38px;
   border-radius: 999px;
-  border: none;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.9rem;
   outline: none;
-  background: #222;
-  color: white;
-  font-size: 1rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 #search:focus {
-  box-shadow: 0 0 0 3px var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-#videoCount {
-  margin-top: 10px;
+#search::placeholder { color: var(--text-muted); }
+
+.search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
   color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+
+.search-clear.visible { display: flex; }
+.search-clear:hover { background: rgba(255,255,255,0.1); }
+
+.shuffle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+
+.shuffle-btn:hover { border-color: var(--accent); color: var(--accent); }
+.shuffle-btn:active { transform: scale(0.92); }
+
+.filter-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 -16px;
+  padding: 0 16px 12px;
+}
+
+.filter-scroll::-webkit-scrollbar { display: none; }
+
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  width: max-content;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.chip:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+.chip:active { transform: scale(0.96); }
+
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+.chip .count {
+  font-size: 0.72rem;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.chip.active .count { opacity: 0.85; }
+
+#videoCount {
+  padding: 0 0 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+main {
+  min-height: calc(100vh - 200px);
+  padding-bottom: 80px;
 }
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
-  gap: 28px;
-  padding: 28px;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px;
 }
 
 .video-card {
   background: var(--card-bg);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-  transition: var(--transition);
+  box-shadow: var(--shadow);
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+  opacity: 0;
+  transform: translateY(20px);
+  contain: layout style;
 }
 
-.video-card:hover {
-  transform: translateY(-8px);
-  background: var(--card-hover);
+.video-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s ease, box-shadow var(--transition), background var(--transition);
+}
+
+.video-card.playing {
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow-lg);
 }
 
 .thumbnail-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: black;
+  aspect-ratio: 16/9;
+  background: #111;
   cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .thumbnail-container img {
@@ -100,30 +274,99 @@ h1 {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease, opacity 0.4s ease;
+  background: linear-gradient(110deg, #161616 8%, #1e1e1e 18%, #161616 33%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
 }
 
-.play-icon {
+.thumbnail-container img.loaded { animation: none; background: #111; }
+
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+.play-btn {
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15)),
-    url("https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_play_button_icon_(2013â€“2017).svg")
-    center / 80px no-repeat;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 42px;
+  background: rgba(255,0,0,0.85);
+  border-radius: 10px / 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), transform var(--transition);
+  pointer-events: none;
+}
+
+.play-btn::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 9px 0 9px 16px;
+  border-color: transparent transparent transparent white;
+  margin-left: 3px;
+}
+
+.duration-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
 }
 
 .video-info {
-  padding: 16px 18px;
+  padding: 12px 14px;
+}
+
+.video-info .creator {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .video-info h3 {
-  margin: 0;
-  font-size: 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
   line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.video-info .tag-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .player-container {
+  position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16/9;
 }
 
 .player-container iframe {
@@ -132,219 +375,549 @@ h1 {
   border: none;
 }
 
-.hidden {
-  display: none;
+.close-player {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background var(--transition), transform var(--transition);
+  backdrop-filter: blur(4px);
 }
+
+.close-player:hover { background: rgba(255,51,51,0.8); }
+.close-player:active { transform: scale(0.9); }
+
+.hidden { display: none !important; }
+
+.no-results {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+
+.no-results svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.no-results p {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.no-results .sub { font-size: 0.85rem; }
+
+.back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  right: max(24px, env(safe-area-inset-right, 24px));
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition: all 0.3s ease;
+  z-index: 99;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-to-top.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+.back-to-top:hover { transform: translateY(-2px); box-shadow: 0 6px 28px var(--accent-glow); }
+.back-to-top:active { transform: scale(0.92); }
+
+@media (min-width: 480px) {
+  .video-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 640px) {
+  header { padding: 20px 24px 0; }
+  .filter-scroll { margin: 0 -24px; padding: 0 24px 12px; }
+  h1 { font-size: 1.4rem; }
+  .video-grid { gap: 20px; padding: 20px; }
+  .video-info { padding: 14px 16px; }
+  .video-info h3 { font-size: 0.92rem; }
+}
+
+@media (min-width: 768px) {
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .video-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    background: var(--card-hover);
+  }
+
+  .thumbnail-container:hover img { transform: scale(1.04); }
+
+  .thumbnail-container:hover .play-btn {
+    background: rgba(255,0,0,1);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .video-grid {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 32px;
+    gap: 28px;
+  }
+
+  .video-info { padding: 16px 18px; }
+  .video-info h3 { font-size: 0.95rem; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+  .video-card { opacity: 1; transform: none; }
+  .video-card.visible { transition: none; }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible) { outline: none; }
 </style>
 </head>
 
 <body>
 
+<div class="accent-bar"></div>
+
 <header>
-  <h1>Personal YouTube Library</h1>
-  <input id="search" placeholder="Search by title..." autocomplete="off">
+  <div class="header-top">
+    <h1>YouTube Library<span class="dot">.</span></h1>
+    <div class="search-wrapper">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search" type="search" placeholder="Search videos..." autocomplete="off" enterkeyhint="search">
+      <button class="search-clear" id="searchClear" aria-label="Clear search">&times;</button>
+    </div>
+    <button class="shuffle-btn" id="shuffleBtn" aria-label="Shuffle videos" title="Shuffle">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+    </button>
+  </div>
+  <div class="filter-scroll">
+    <div class="filter-chips" id="filterChips"></div>
+  </div>
   <p id="videoCount"></p>
 </header>
 
-<div id="videoGrid" class="video-grid"></div>
+<main>
+  <div id="videoGrid" class="video-grid"></div>
+  <div id="noResults" class="no-results hidden">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    <p>No videos found</p>
+    <p class="sub">Try a different search or filter</p>
+  </div>
+</main>
+
+<button id="backToTop" class="back-to-top" aria-label="Back to top">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
 
 <script>
 const videos = [
-  { id: "VzDAPJNtAQk", title: "literally who asked for this?" },
-  { id: "boDJAVpaO9c", title: "Unforgiven - Analysing The Greatest Western Ever Made" },
-  { id: "YkLVeQ_ANEg", title: "This changes everything." },
-  { id: "BmmUP25W86g", title: "Hasan Just F**ked Up Super Bad…" },
-  { id: "478lTOXG9Wc", title: "Who is the Most POWERFUL Dragon in How To Train Your Dragon?" },
-  { id: "1xBrxWzKzDQ", title: "The Biology of Subnautica | Full Documentary" },
-  { id: "Seu7V91vxAo", title: "The 'Biology' of Horizon Zero Dawn" },
-  { id: "8d9_TA1hi9w", title: "'Biology' of Horizon: Zero Dawn | Part II" },
-  { id: "lLWE5328LPs", title: "The Biology of Monster Hunter Wilds | Full Documentary" },
-  { id: "uydvCGStqEo", title: "Can My Viewers Count to 10 Before I Beat Zelda?" },
-  { id: "jGnDdrrstMY", title: "For my 30 year old cousin (who's never played Minecraft)" },
-  { id: "PYivaEpS5_k", title: "Who Will Rule North Korea Next?" },
-  { id: "7p5sDTjkug4", title: "Vampire Crawlers Challenged Me To Break The Game..." },
-  { id: "Bp4BZiszJ3M", title: "I'm Never Bringing Her On Stream Again..." },
-  { id: "qVAKiO2Lr6Q", title: "New Video 1" },
-  { id: "rJLuZR_uAm0", title: "New Video 2" },
-  { id: "rbxYShsMp6c", title: "New Video 3" },
-  { id: "MT6UeNf4IEk", title: "New Video 4" },
+  { id: "VzDAPJNtAQk", title: "literally who asked for this?", tags: [] },
+  { id: "boDJAVpaO9c", title: "Unforgiven - Analysing The Greatest Western Ever Made", tags: ["documentary"] },
+  { id: "YkLVeQ_ANEg", title: "This changes everything.", tags: [] },
+  { id: "BmmUP25W86g", title: "Hasan Just F**ked Up Super Bad…", tags: [] },
+  { id: "478lTOXG9Wc", title: "Who is the Most POWERFUL Dragon in How To Train Your Dragon?", tags: ["documentary"] },
+  { id: "1xBrxWzKzDQ", title: "The Biology of Subnautica | Full Documentary", tags: ["documentary", "gaming"] },
+  { id: "Seu7V91vxAo", title: "The 'Biology' of Horizon Zero Dawn", tags: ["documentary", "gaming"] },
+  { id: "8d9_TA1hi9w", title: "'Biology' of Horizon: Zero Dawn | Part II", tags: ["documentary", "gaming"] },
+  { id: "lLWE5328LPs", title: "The Biology of Monster Hunter Wilds | Full Documentary", tags: ["documentary", "gaming"] },
+  { id: "uydvCGStqEo", title: "Can My Viewers Count to 10 Before I Beat Zelda?", tags: ["gaming"] },
+  { id: "jGnDdrrstMY", title: "For my 30 year old cousin (who's never played Minecraft)", tags: ["gaming"] },
+  { id: "PYivaEpS5_k", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "7p5sDTjkug4", title: "Vampire Crawlers Challenged Me To Break The Game...", tags: ["gaming"] },
+  { id: "Bp4BZiszJ3M", title: "I'm Never Bringing Her On Stream Again...", tags: ["gaming"] },
+  { id: "qVAKiO2Lr6Q", title: "New Video 1", tags: [] },
+  { id: "rJLuZR_uAm0", title: "New Video 2", tags: [] },
+  { id: "rbxYShsMp6c", title: "New Video 3", tags: [] },
+  { id: "MT6UeNf4IEk", title: "New Video 4", tags: [] },
+  { id: "FkDvDkdid_w", title: "New Video 5", tags: [] },
+  { id: "CugH4jj0iG4", title: "New Video 6", tags: [] },
+  { id: "JO5WJR2yY-U", title: "New Video 7", tags: [] },
+  { id: "IawF_J1LvBo", title: "New Video 8", tags: [] },
+  { id: "jT_IgAy2-yw", title: "New Video 9", tags: [] },
+  { id: "-XNPBlyP-3w", title: "New Video 10", tags: [] },
+  { id: "BPdTPFqKQM0", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "lCW5YRY621M", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "ijaVLwA9rpw", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "pvzQqsqqWfI", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "Me7JfvfYIQo", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "PNMSaxI-Xts", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "GV5pVM0Wxco", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "IrC4pf5in54", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "AIOFNWoxexs", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
+  { id: "jixf_daLbMo", title: "Who Will Rule North Korea Next?", tags: ["documentary"] },
 
-  { id: "FkDvDkdid_w", title: "New Video 5" },
-  { id: "CugH4jj0iG4", title: "New Video 6" },
-  { id: "JO5WJR2yY-U", title: "New Video 7" },
-  { id: "IawF_J1LvBo", title: "New Video 8" },
-  { id: "jT_IgAy2-yw", title: "New Video 9" },
-  { id: "-XNPBlyP-3w", title: "New Video 10" },
-  { id: "BPdTPFqKQM0", title: "Who Will Rule North Korea Next?" },
-  { id: "lCW5YRY621M", title: "Who Will Rule North Korea Next?" },
-  { id: "ijaVLwA9rpw", title: "Who Will Rule North Korea Next?" },
-  { id: "pvzQqsqqWfI", title: "Who Will Rule North Korea Next?" },
-  { id: "Me7JfvfYIQo", title: "Who Will Rule North Korea Next?" },
-  { id: "PNMSaxI-Xts", title: "Who Will Rule North Korea Next?" },
-  { id: "GV5pVM0Wxco", title: "Who Will Rule North Korea Next?" },
-  { id: "IrC4pf5in54", title: "Who Will Rule North Korea Next?" },
-  { id: "AIOFNWoxexs", title: "Who Will Rule North Korea Next?" },
-  { id: "jixf_daLbMo", title: "Who Will Rule North Korea Next?" },
+  { id: "SxQ8YOeMawk", title: "Dumbs — 5 Silvers vs 5 Challengers ft. Tenshi, NoArmWhatley & SloppyWalrus", tags: ["league"] },
+  { id: "NFH41Gf0G98", title: "Dumbs — League Streamers Try Out Meccha Chameleon ft. Alois, Tenshi, Whatley, 6pek", tags: ["league"] },
+  { id: "iPVYyh44ua8", title: "Dumbs — League of Legends: Proximity Chat V2", tags: ["league"] },
+  { id: "Kw2ZbHCbCG4", title: "Dumbs — $10K Trio Arena Tournament vs Baus | Arena Rumble", tags: ["league"] },
+  { id: "rva4vj1MTmo", title: "Dumbs — Proximity Chat in League is SO FUNNY", tags: ["league"] },
 
-  // --- Dumbs (League/Valorant) ---
-  { id: "SxQ8YOeMawk", title: "Dumbs — 5 Silvers vs 5 Challengers ft. Tenshi, NoArmWhatley & SloppyWalrus" },
-  { id: "NFH41Gf0G98", title: "Dumbs — League Streamers Try Out Meccha Chameleon ft. Alois, Tenshi, Whatley, 6pek" },
-  { id: "iPVYyh44ua8", title: "Dumbs — League of Legends: Proximity Chat V2" },
-  { id: "Kw2ZbHCbCG4", title: "Dumbs — $10K Trio Arena Tournament vs Baus | Arena Rumble" },
-  { id: "rva4vj1MTmo", title: "Dumbs — Proximity Chat in League is SO FUNNY" },
+  { id: "wqMEFImRHvc", title: "cutespiders — I Confronted My Most PARASOCIAL Fan... (luckycookii)", tags: ["gaming"] },
+  { id: "zJ4N7w7rqRk", title: "cutespiders — ragebaiting valorant players", tags: ["gaming"] },
+  { id: "CiQiQwF1Oms", title: "cutespiders — I Caught The Weirdest Predators In Valorant...", tags: ["gaming"] },
+  { id: "VQ9aei2TLVw", title: "cutespiders — I Ran Into The WEIRDEST Valorant E-Daters...", tags: ["gaming"] },
 
-  // --- cutespiders (Valorant) ---
-  { id: "wqMEFImRHvc", title: "cutespiders — I Confronted My Most PARASOCIAL Fan... (luckycookii)" },
-  { id: "zJ4N7w7rqRk", title: "cutespiders — ragebaiting valorant players" },
-  { id: "CiQiQwF1Oms", title: "cutespiders — I Caught The Weirdest Predators In Valorant..." },
-  { id: "VQ9aei2TLVw", title: "cutespiders — I Ran Into The WEIRDEST Valorant E-Daters..." },
+  { id: "8OGH3KpZyWI", title: "Baus — IS LOCKE BALANCED??", tags: ["league"] },
+  { id: "zQ6UgCbx1YE", title: "Baus — MY NEW PROFESSIONAL PROJECT!", tags: ["league"] },
+  { id: "aBFKHncl5Xw", title: "Baus — I QUIT TOPLANE!", tags: ["league"] },
+  { id: "TkfKqxsocCs", title: "Baus — A NEW HEALTH WORLD RECORD! *CLIIIIIIIIING*", tags: ["league"] },
 
-  // --- Thebausffs (League) ---
-  { id: "8OGH3KpZyWI", title: "Baus — IS LOCKE BALANCED??" },
-  { id: "zQ6UgCbx1YE", title: "Baus — MY NEW PROFESSIONAL PROJECT!" },
-  { id: "aBFKHncl5Xw", title: "Baus — I QUIT TOPLANE!" },
-  { id: "TkfKqxsocCs", title: "Baus — A NEW HEALTH WORLD RECORD! *CLIIIIIIIIING*" },
+  { id: "RDhzXxB1S-k", title: "Drututt — If I Can Get 30 Kills I Get $1000... (Insane Locke Game)", tags: ["league"] },
+  { id: "783OWrdW8hg", title: "Drututt — Drututt Discord vs Tenshi Discord Tournament", tags: ["league"] },
+  { id: "BqR-HX5nioc", title: "Drututt — Ranked 5s With Most Stacked Squad Ever (Rose/Nemesis/Phantasm/Agurin)", tags: ["league"] },
+  { id: "eQE5yNDJbK8", title: "Drututt — Triple T Strikes Again, Unkillable Raid Boss Nasus", tags: ["league"] },
 
-  // --- Drututt (League) ---
-  { id: "RDhzXxB1S-k", title: "Drututt — If I Can Get 30 Kills I Get $1000... (Insane Locke Game)" },
-  { id: "783OWrdW8hg", title: "Drututt — Drututt Discord vs Tenshi Discord Tournament" },
-  { id: "BqR-HX5nioc", title: "Drututt — Ranked 5s With Most Stacked Squad Ever (Rose/Nemesis/Phantasm/Agurin)" },
-  { id: "eQE5yNDJbK8", title: "Drututt — Triple T Strikes Again, Unkillable Raid Boss Nasus" },
+  { id: "twmlgL0mZGU", title: "NoArmWhatley — 5 Girlypops vs 5 Challengers", tags: ["league"] },
+  { id: "CkO6NNwD7qw", title: "NoArmWhatley — Infinite Healing Tahm", tags: ["league"] },
+  { id: "caftb50Ru_k", title: "NoArmWhatley — Broke Boy Tahm Has Returned", tags: ["league"] },
+  { id: "7xWAHQAVHPU", title: "NoArmWhatley — I GOT CANCELLED", tags: ["league"] },
 
-  // --- NoArmWhatley (League) ---
-  { id: "twmlgL0mZGU", title: "NoArmWhatley — 5 Girlypops vs 5 Challengers" },
-  { id: "CkO6NNwD7qw", title: "NoArmWhatley — Infinite Healing Tahm" },
-  { id: "caftb50Ru_k", title: "NoArmWhatley — Broke Boy Tahm Has Returned" },
-  { id: "7xWAHQAVHPU", title: "NoArmWhatley — I GOT CANCELLED" },
+  { id: "OEXRsZvoiUM", title: "Tenshi — Can 5 Low Elo Girls Beat Challengers?", tags: ["league"] },
 
-  // --- Tenshi (League) ---
-  { id: "OEXRsZvoiUM", title: "Tenshi — Can 5 Low Elo Girls Beat Challengers?" },
+  { id: "5Dzy5DCZ8o0", title: "Dantes — I Watched The Most ICONIC League of Legends Clips of ALL TIME", tags: ["league"] },
+  { id: "wG1kaXTEdLI", title: "Dantes — xQc Lost His MIND ft. Tyler1 & Tobias Fate", tags: ["league"] },
+  { id: "s0N8cXUvVx8", title: "Dantes — I Coached Jynxzi From Bronze 4 to Silver 4 in 72 Hours", tags: ["league"] },
+  { id: "-pVtmkJA2NU", title: "Dantes — Jynxzi & Dantes 2AM Domino's Mukbang", tags: ["league"] },
 
-  // --- Dantes (League) ---
-  { id: "5Dzy5DCZ8o0", title: "Dantes — I Watched The Most ICONIC League of Legends Clips of ALL TIME" },
-  { id: "wG1kaXTEdLI", title: "Dantes — xQc Lost His MIND ft. Tyler1 & Tobias Fate" },
-  { id: "s0N8cXUvVx8", title: "Dantes — I Coached Jynxzi From Bronze 4 to Silver 4 in 72 Hours" },
-  { id: "-pVtmkJA2NU", title: "Dantes — Jynxzi & Dantes 2AM Domino's Mukbang" },
+  { id: "zQzwAPDVLd0", title: "카더정원 — 보드게임 멤버들의 방탈출 나들이 (Escape Room Outing)", tags: ["korean"] },
+  { id: "8fX_3cuXvXA", title: "카더정원 — 차요셉의 만찬 | 수제버거 편 (Homemade Burger Feast)", tags: ["korean"] },
+  { id: "OOSggSliC34", title: "카더정원 — 로마의 휴일 (선공개)", tags: ["korean"] },
+  { id: "aYprkUVv3QU", title: "카더정원 — 서울대 의대에 보내야견군요", tags: ["korean"] },
 
-  // --- Car, the Garden (카더정원 — content channel, not music) ---
-  { id: "zQzwAPDVLd0", title: "카더정원 — 보드게임 멤버들의 방탈출 나들이 (Escape Room Outing)" },
-  { id: "8fX_3cuXvXA", title: "카더정원 — 차요셉의 만찬 | 수제버거 편 (Homemade Burger Feast)" },
-  { id: "OOSggSliC34", title: "카더정원 — 로마의 휴일 (선공개)" },
-  { id: "aYprkUVv3QU", title: "카더정원 — 서울대 의대에 보내야겠군요" },
+  { id: "GIu7zVcAfVs", title: "조한범 박사 — 미국 유럽 강대국들이 최근 한국 군사력 실제수준을 눈치채자 보인 반응 (1부) | 정영진의 나쁜질문", tags: ["korean", "documentary"] },
 
-  // --- 정영진의 나쁜질문 (조한범 박사) ---
-  { id: "GIu7zVcAfVs", title: "조한범 박사 — 미국 유럽 강대국들이 최근 한국 군사력 실제수준을 눈치채자 보인 반응 (1부) | 정영진의 나쁜질문" },
+  { id: "bQneIbBvKD8", title: "Doublelift — I Instalocked Ezreal in Solo Queue & 1v9ed the Entire Game", tags: ["league"] },
+  { id: "eUXYMvJF5Ao", title: "Doublelift — INSANE EZREAL PLAYS", tags: ["league"] },
+  { id: "N0gQ5Nt6tMc", title: "Doublelift — Chinese Ezreals Are INSANE (Reacting to Super Server Ezreal)", tags: ["league"] },
+  { id: "WS4kclPPWYs", title: "Dabuin — Full AP Ezreal.exe", tags: ["league"] },
+  { id: "uwKfzMMkE8I", title: "Crownie — EZREAL IS A MONSTER", tags: ["league"] },
+  { id: "bmHzQemhpmw", title: "Pekin Woof — The Biggest AP Ezreal Mid 1v9 You Will Ever See", tags: ["league"] },
+  { id: "k8tvoQnn1ik", title: "Zwagmo — The Most 1v9 Ezreal Game You Will Ever Witness (No Team)", tags: ["league"] },
+  { id: "8HaHuQXV8RY", title: "Nightblue3 — New Dark Harvest Ezreal Jungle Is INSANE (1v9 Carry)", tags: ["league"] },
 
-  // --- Ezreal (fun videos from big League creators) ---
-  { id: "bQneIbBvKD8", title: "Doublelift — I Instalocked Ezreal in Solo Queue & 1v9ed the Entire Game" },
-  { id: "eUXYMvJF5Ao", title: "Doublelift — INSANE EZREAL PLAYS" },
-  { id: "N0gQ5Nt6tMc", title: "Doublelift — Chinese Ezreals Are INSANE (Reacting to Super Server Ezreal)" },
-  { id: "WS4kclPPWYs", title: "Dabuin — Full AP Ezreal.exe" },
-  { id: "uwKfzMMkE8I", title: "Crownie — EZREAL IS A MONSTER" },
-  { id: "bmHzQemhpmw", title: "Pekin Woof — The Biggest AP Ezreal Mid 1v9 You Will Ever See" },
-  { id: "k8tvoQnn1ik", title: "Zwagmo — The Most 1v9 Ezreal Game You Will Ever Witness (No Team)" },
-  { id: "8HaHuQXV8RY", title: "Nightblue3 — New Dark Harvest Ezreal Jungle Is INSANE (1v9 Carry)" },
+  { id: "5Y-SW1HK_M8", title: "미미미누 — 요리하는 게 이렇게 힘든 줄 몰랐습니다 [병천고 조리과] | 전학왔습니다 1화", tags: ["korean", "tips"] },
+  { id: "9J1IXuEtToY", title: "빠더너스 BDNS — [고등학생 vlog] 전학 켫날 브이로그 (자기소개 꽁팁 등)", tags: ["korean", "tips"] },
+  { id: "Sp07jl9sqZ0", title: "10대고민연구소 — 전학가서 인기 많아지는 법 / 적응 잘하는 방법 / 친구 사귀는 법", tags: ["korean", "tips"] },
+  { id: "JthglFN1N74", title: "대처법 — 전학 왔는데 아무도 말 안 걸 때 대처법 (ft. 채채)", tags: ["korean", "tips"] },
+  { id: "GwHJNokrJn0", title: "입시덕후 — 새학기 학교생활 개꽁팁 23가지", tags: ["korean", "tips"] },
+  { id: "P68UAX2gAc8", title: "입시덕후 — 개학 켫날 꽁팁 모음! 새학기 켫날 미리보기", tags: ["korean", "tips"] },
+  { id: "ulISraLYTCg", title: "드림맘 — 이것 모르고 전학하면 큰일 납니다 / 꼭 알아야 할 3가지", tags: ["korean", "tips"] },
+  { id: "XCa58BwbT2U", title: "어디든학교 — 새학년 새학기, 절대 하면 안 될 세 가지", tags: ["korean", "tips"] },
+  { id: "tk6bSIlkHYM", title: "CheezeFilm — 새학기 친구 만드는 방법", tags: ["korean", "tips"] },
+  { id: "xHaQ9dXCho8", title: "1분만 — 진짜 인싸 되는 법", tags: ["korean", "tips"] },
 
-  // --- 새 고등학교 전학·적응 팁 (Korean) ---
-  { id: "5Y-SW1HK_M8", title: "미미미누 — 요리하는 게 이렇게 힘든 줄 몰랐습니다 [병천고 조리과] | 전학왔습니다 1화" },
-  { id: "9J1IXuEtToY", title: "빠더너스 BDNS — [고등학생 vlog] 전학 첫날 브이로그 (자기소개 꿀팁 등)" },
-  { id: "Sp07jl9sqZ0", title: "10대고민연구소 — 전학가서 인기 많아지는 법 / 적응 잘하는 방법 / 친구 사귀는 법" },
-  { id: "JthglFN1N74", title: "대처법 — 전학 왔는데 아무도 말 안 걸 때 대처법 (ft. 채채)" },
-  { id: "GwHJNokrJn0", title: "입시덕후 — 새학기 학교생활 개꿀팁 23가지" },
-  { id: "P68UAX2gAc8", title: "입시덕후 — 개학 첫날 꿀팁 모음! 새학기 첫날 미리보기" },
-  { id: "ulISraLYTCg", title: "드림맘 — 이것 모르고 전학하면 큰일 납니다 / 꼭 알아야 할 3가지" },
-  { id: "XCa58BwbT2U", title: "어디든학교 — 새학년 새학기, 절대 하면 안 될 세 가지" },
-  { id: "tk6bSIlkHYM", title: "CheezeFilm — 새학기 친구 만드는 방법" },
-  { id: "xHaQ9dXCho8", title: "1분만 — 진짜 인싸 되는 법" },
+  { id: "slqq9NBHeG4", title: "The Josh Speaks — How To SUCCEED as a NEW KID at a NEW SCHOOL", tags: ["tips"] },
+  { id: "nufa7bvWfvM", title: "Angel Grey — How to Make Friends at a New School as a New Kid (LIFESAVER!)", tags: ["tips"] },
+  { id: "yimtG8iSu5Q", title: "Aiyah Lena — Advice on Being the New Kid at School (tips + more)", tags: ["tips"] },
+  { id: "oWXlA10N4to", title: "Angel Grey — New School Survival Guide: Tips for Changing Schools & Thriving", tags: ["tips"] },
+  { id: "1Xxk8U9K8dY", title: "Orla — Moving Schools Advice!", tags: ["tips"] },
+  { id: "AUtlvhQU5Do", title: "reiko malia — 50 Things I Wish I Knew Before Starting High School (Freshman Advice)", tags: ["tips"] },
+  { id: "fLawDZ3Cxr8", title: "Bright Side — How to Survive High School: The First Day", tags: ["tips"] },
+  { id: "5TLhdzQmNL8", title: "Esnyr — First Day High (animated comedy)", tags: ["tips", "comedy"] },
+  { id: "KcRg0N1VpWM", title: "Junskully — Being the New Kid at School... (comedy)", tags: ["tips", "comedy"] },
+  { id: "0clyu5FNtEQ", title: "Now Comedy — First Day of High School | 21 Jump Street (comedy clip)", tags: ["tips", "comedy"] },
+  { id: "NoJ123vYorc", title: "ChainsFR — High School In A Nutshell (comedy)", tags: ["tips", "comedy"] },
+  { id: "4swrVanff_c", title: "Spencer Barbosa — Back to School Tips (How to Make Friends & Advice)", tags: ["tips"] },
 
-  // --- Starting / moving to a new high school (English) ---
-  { id: "slqq9NBHeG4", title: "The Josh Speaks — How To SUCCEED as a NEW KID at a NEW SCHOOL" },
-  { id: "nufa7bvWfvM", title: "Angel Grey — How to Make Friends at a New School as a New Kid (LIFESAVER!)" },
-  { id: "yimtG8iSu5Q", title: "Aiyah Lena — Advice on Being the New Kid at School (tips + more)" },
-  { id: "oWXlA10N4to", title: "Angel Grey — New School Survival Guide: Tips for Changing Schools & Thriving" },
-  { id: "1Xxk8U9K8dY", title: "Orla — Moving Schools Advice!" },
-  { id: "AUtlvhQU5Do", title: "reiko malia — 50 Things I Wish I Knew Before Starting High School (Freshman Advice)" },
-  { id: "fLawDZ3Cxr8", title: "Bright Side — How to Survive High School: The First Day" },
-  { id: "5TLhdzQmNL8", title: "Esnyr — First Day High (animated comedy)" },
-  { id: "KcRg0N1VpWM", title: "Junskully — Being the New Kid at School... (comedy)" },
-  { id: "0clyu5FNtEQ", title: "Now Comedy — First Day of High School | 21 Jump Street (comedy clip)" },
-  { id: "NoJ123vYorc", title: "ChainsFR — High School In A Nutshell (comedy)" },
-  { id: "4swrVanff_c", title: "Spencer Barbosa — Back to School Tips (How to Make Friends & Advice)" },
+  { id: "zArKDQPa6KY", title: "NoArmWhatley — PONDERING MY OBLIVION ORB (latest)", tags: ["league"] },
+  { id: "KKqE71DbRFg", title: "NoArmWhatley — This Tresh Was SMURFING...", tags: ["league"] },
+  { id: "j7MobNzNMUw", title: "NoArmWhatley — MUNCHING ON SOME YUMMY YONE PLAYERS", tags: ["league"] },
 
-  { id: "zArKDQPa6KY", title: "NoArmWhatley — PONDERING MY OBLIVION ORB (latest)" },
-  { id: "KKqE71DbRFg", title: "NoArmWhatley — This Tresh Was SMURFING... 😮" },
-  { id: "j7MobNzNMUw", title: "NoArmWhatley — MUNCHING ON SOME YUMMY YONE PLAYERS" },
+  { id: "V53wS9PUYdg", title: "빠더너스 BDNS — 문상훈이랑 땅땅이치고 가을 타기 (눈물 참기, 양꼬치, 낮술, 노래방)", tags: ["korean", "comedy"] },
+  { id: "lO62Z4X_WmQ", title: "빠더너스 BDNS — 딱대 EP51 김원훈 (숏박스 vs 솖밥싹)", tags: ["korean", "comedy"] },
+  { id: "7sDBEb3w2r8", title: "빠더너스 BDNS — 딱대 EP37 이광수 (기린 vs 불린)", tags: ["korean", "comedy"] },
+  { id: "1QKq6Y8s0LI", title: "피식대학 Psick Univ — [B대면데이트] 마지막 데이트 | 이호창 \xb7 최준", tags: ["korean", "comedy"] },
+  { id: "Irnj26nPCVo", title: "피식대학 Psick Univ — [최준의 니곡내곡] 최준 - 봄이 좋냐?? (feat. 10CM 권정열)", tags: ["korean", "comedy"] },
+  { id: "7VUTjhc-s6o", title: "숏박스 SHORTBOX — 고깟집", tags: ["korean", "comedy"] },
+  { id: "tA58K0PfuOA", title: "숏박스 SHORTBOX — 오빠 나 이러려고 만나? (장기연애)", tags: ["korean", "comedy"] },
+  { id: "kWHCctfS5ZA", title: "숏박스 SHORTBOX — 상견례", tags: ["korean", "comedy"] },
+  { id: "Z7mmlVrEumU", title: "숏박스 SHORTBOX — 이 중고차 몇 년생이에요?", tags: ["korean", "comedy"] },
+  { id: "N8sWtavcLTY", title: "Korean Dad Relationship Advice [ENG CC]", tags: ["korean", "comedy"] },
+  { id: "M2Iya_agA6Q", title: "스낙타운 SNACKTOWN — (꽁트) 미용실 토크가 딥한 사람", tags: ["korean", "comedy"] },
+  { id: "u05iuui3s6k", title: "침착맨 — 꽁잼 대인배 빠더너스 문상훈 초대석", tags: ["korean", "comedy"] },
 
-  // --- Korean comedy (빠더너스/피식대학/숏박스/스낵타운/침착맨) ---
-  { id: "V53wS9PUYdg", title: "빠더너스 BDNS — 문상훈이랑 땡땡이치고 가을 타기 (눈물 참기, 양꼬치, 낮술, 노래방)" },
-  { id: "lO62Z4X_WmQ", title: "빠더너스 BDNS — 딱대 EP51 김원훈 (숏박스 vs 솥밥싹)" },
-  { id: "7sDBEb3w2r8", title: "빠더너스 BDNS — 딱대 EP37 이광수 (기린 vs 불린)" },
-  { id: "1QKq6Y8s0LI", title: "피식대학 Psick Univ — [B대면데이트] 마지막 데이트 | 이호창 · 최준" },
-  { id: "Irnj26nPCVo", title: "피식대학 Psick Univ — [최준의 니곡내곡] 최준 - 봄이 좋냐?? (feat. 10CM 권정열)" },
-  { id: "7VUTjhc-s6o", title: "숏박스 SHORTBOX — 고깃집" },
-  { id: "tA58K0PfuOA", title: "숏박스 SHORTBOX — 오빠 나 이러려고 만나? (장기연애)" },
-  { id: "kWHCctfS5ZA", title: "숏박스 SHORTBOX — 상견례" },
-  { id: "Z7mmlVrEumU", title: "숏박스 SHORTBOX — 이 중고차 몇 년생이에요?" },
-  { id: "N8sWtavcLTY", title: "Korean Dad Relationship Advice [ENG CC]" },
-  { id: "M2Iya_agA6Q", title: "스낵타운 SNACKTOWN — (꽁트) 미용실 토크가 딥한 사람" },
-  { id: "u05iuui3s6k", title: "침착맨 — 꿀잼 대인배 빠더너스 문상훈 초대석" },
-
-  // --- Self-haircut guide ---
-  { id: "-ewJDxnYkNU", title: "alpha m. — Quick & Easy Home Haircut Tutorial & Tips (How to Cut Your Own Hair)" },
-
+  { id: "-ewJDxnYkNU", title: "alpha m. — Quick & Easy Home Haircut Tutorial & Tips (How to Cut Your Own Hair)", tags: ["tips"] },
 ];
 
+const categories = [
+  { id: "all", label: "All" },
+  { id: "league", label: "League" },
+  { id: "gaming", label: "Gaming" },
+  { id: "korean", label: "한국어" },
+  { id: "comedy", label: "Comedy" },
+  { id: "documentary", label: "Docs" },
+  { id: "tips", label: "Tips" },
+];
+
+let activeFilter = "all";
+let searchQuery = "";
+let shuffled = false;
+let shuffleOrder = [];
+let activePlayerCard = null;
+
 const grid = document.getElementById("videoGrid");
-const search = document.getElementById("search");
-const count = document.getElementById("videoCount");
+const searchInput = document.getElementById("search");
+const searchClear = document.getElementById("searchClear");
+const countEl = document.getElementById("videoCount");
+const filterChipsEl = document.getElementById("filterChips");
+const noResults = document.getElementById("noResults");
+const backToTop = document.getElementById("backToTop");
+const shuffleBtn = document.getElementById("shuffleBtn");
+
+function getCounts() {
+  const counts = { all: videos.length };
+  categories.forEach(c => { if (c.id !== "all") counts[c.id] = 0; });
+  videos.forEach(v => {
+    (v.tags || []).forEach(t => { if (counts[t] !== undefined) counts[t]++; });
+  });
+  return counts;
+}
+
+function renderChips() {
+  const counts = getCounts();
+  filterChipsEl.innerHTML = "";
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "chip" + (activeFilter === cat.id ? " active" : "");
+    btn.innerHTML = cat.label + ' <span class="count">' + counts[cat.id] + "</span>";
+    btn.onclick = () => {
+      activeFilter = cat.id;
+      shuffled = false;
+      renderChips();
+      render();
+    };
+    filterChipsEl.appendChild(btn);
+  });
+}
+
+function getFiltered() {
+  let list = videos;
+  if (activeFilter !== "all") {
+    list = list.filter(v => v.tags && v.tags.includes(activeFilter));
+  }
+  if (searchQuery) {
+    list = list.filter(v => v.title.toLowerCase().includes(searchQuery));
+  }
+  if (shuffled && !searchQuery) {
+    const idSet = new Set(list.map(v => v.id));
+    list = shuffleOrder.filter(v => idSet.has(v.id));
+  }
+  return list;
+}
+
+function parseTitle(title) {
+  const sep = title.indexOf(" — ");
+  if (sep !== -1) {
+    return { creator: title.substring(0, sep), title: title.substring(sep + 3) };
+  }
+  return { creator: null, title: title };
+}
+
+function getPrimaryTag(tags) {
+  if (!tags || !tags.length) return null;
+  const priority = ["league", "gaming", "korean", "comedy", "documentary", "tips"];
+  for (const p of priority) {
+    if (tags.includes(p)) return p;
+  }
+  return tags[0];
+}
+
+const tagLabels = { league: "League", gaming: "Gaming", korean: "한국어", comedy: "Comedy", documentary: "Docs", tips: "Tips" };
 
 function createCard(video) {
   const card = document.createElement("div");
   card.className = "video-card";
+  card.dataset.id = video.id;
 
-  card.innerHTML = `
-    <div class="thumbnail-container">
-      <img src="https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg"
-           onerror="this.src='https://i.ytimg.com/vi/${video.id}/hqdefault.jpg'">
-      <div class="play-icon"></div>
-    </div>
+  const parsed = parseTitle(video.title);
+  const tag = getPrimaryTag(video.tags);
 
-    <div class="video-info">
-      <h3>${video.title}</h3>
-    </div>
+  card.innerHTML =
+    '<div class="thumbnail-container">' +
+      '<img data-src="https://i.ytimg.com/vi/' + video.id + '/mqdefault.jpg" alt="" loading="lazy">' +
+      '<div class="play-btn"></div>' +
+    '</div>' +
+    '<div class="video-info">' +
+      (parsed.creator ? '<span class="creator">' + escapeHtml(parsed.creator) + '</span>' : '') +
+      '<h3>' + escapeHtml(parsed.title) + '</h3>' +
+      (tag ? '<span class="tag-badge">' + tagLabels[tag] + '</span>' : '') +
+    '</div>' +
+    '<div class="player-container hidden">' +
+      '<button class="close-player" aria-label="Close player">\xd7</button>' +
+      '<iframe data-src="https://www.youtube-nocookie.com/embed/' + video.id + '?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>' +
+    '</div>';
 
-    <div class="player-container hidden">
-      <iframe
-        data-src="https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0"
-        allow="autoplay; encrypted-media"
-        allowfullscreen>
-      </iframe>
-    </div>
-  `;
+  const thumb = card.querySelector(".thumbnail-container");
+  const player = card.querySelector(".player-container");
 
-  card.querySelector(".thumbnail-container").onclick = () => {
-    const player = card.querySelector(".player-container");
+  thumb.onclick = () => {
+    if (activePlayerCard && activePlayerCard !== card) stopPlayer(activePlayerCard);
     const iframe = player.querySelector("iframe");
     iframe.src = iframe.dataset.src;
+    thumb.classList.add("hidden");
     player.classList.remove("hidden");
-    card.querySelector(".thumbnail-container").remove();
+    card.classList.add("playing");
+    activePlayerCard = card;
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
+
+  player.querySelector(".close-player").onclick = (e) => {
+    e.stopPropagation();
+    stopPlayer(card);
   };
 
   return card;
 }
 
-function render(list) {
-  grid.innerHTML = "";
-  list.forEach(v => grid.appendChild(createCard(v)));
-  count.textContent = `${list.length} video${list.length !== 1 ? "s" : ""} displayed`;
+function stopPlayer(card) {
+  const thumb = card.querySelector(".thumbnail-container");
+  const player = card.querySelector(".player-container");
+  const iframe = player.querySelector("iframe");
+  iframe.src = "";
+  player.classList.add("hidden");
+  thumb.classList.remove("hidden");
+  card.classList.remove("playing");
+  if (activePlayerCard === card) activePlayerCard = null;
 }
 
-search.oninput = () => {
-  const t = search.value.toLowerCase();
-  render(videos.filter(v => v.title.toLowerCase().includes(t)));
+function escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+const cardObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const card = entry.target;
+      card.classList.add("visible");
+      const img = card.querySelector("img[data-src]");
+      if (img) {
+        img.src = img.dataset.src;
+        img.removeAttribute("data-src");
+        img.onload = () => img.classList.add("loaded");
+        img.onerror = () => {
+          img.src = "https://i.ytimg.com/vi/" + card.dataset.id + "/hqdefault.jpg";
+          img.classList.add("loaded");
+        };
+      }
+      cardObserver.unobserve(card);
+    }
+  });
+}, { rootMargin: "200px", threshold: 0 });
+
+function render() {
+  if (activePlayerCard) stopPlayer(activePlayerCard);
+  const filtered = getFiltered();
+  grid.innerHTML = "";
+  noResults.classList.toggle("hidden", filtered.length > 0);
+  grid.classList.toggle("hidden", filtered.length === 0);
+
+  filtered.forEach((v, i) => {
+    const card = createCard(v);
+    card.style.transitionDelay = Math.min(i * 40, 400) + "ms";
+    grid.appendChild(card);
+    cardObserver.observe(card);
+  });
+
+  countEl.textContent = filtered.length + " video" + (filtered.length !== 1 ? "s" : "");
+}
+
+searchInput.oninput = () => {
+  searchQuery = searchInput.value.toLowerCase().trim();
+  searchClear.classList.toggle("visible", searchInput.value.length > 0);
+  render();
 };
 
-render(videos);
+searchClear.onclick = () => {
+  searchInput.value = "";
+  searchQuery = "";
+  searchClear.classList.remove("visible");
+  searchInput.focus();
+  render();
+};
+
+shuffleBtn.onclick = () => {
+  shuffleOrder = [...videos];
+  for (let i = shuffleOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffleOrder[i], shuffleOrder[j]] = [shuffleOrder[j], shuffleOrder[i]];
+  }
+  shuffled = true;
+  render();
+  shuffleBtn.style.transform = "rotate(180deg)";
+  setTimeout(() => shuffleBtn.style.transform = "", 300);
+};
+
+let scrollTick = false;
+window.addEventListener("scroll", () => {
+  if (!scrollTick) {
+    requestAnimationFrame(() => {
+      backToTop.classList.toggle("visible", window.scrollY > 600);
+      scrollTick = false;
+    });
+    scrollTick = true;
+  }
+}, { passive: true });
+
+backToTop.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === "Escape") {
+    if (activePlayerCard) stopPlayer(activePlayerCard);
+    if (document.activeElement === searchInput) searchInput.blur();
+  }
+});
+
+renderChips();
+render();
 </script>
 
 </body>
